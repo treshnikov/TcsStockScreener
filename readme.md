@@ -2,7 +2,7 @@
 This is a simple bot/screener that helps you find a good entry point to the stock market. The application scans a set of specified  tickers and sends notifications using Telegram messenger when the ticker price has changed by a specified percentage up or down over a specified period of time. For example, you can get a notification when Apple stock drops 2% within 6 hours.
 
 The application uses [Tinkoff API](https://tinkoffcreditsystems.github.io/invest-openapi/) and requires a sandbox token to get stock prices.
-![](https://github.com/treshnikov/TcsStockScreener/blob/main/img/screen.png | width=506)
+<img src="https://github.com/treshnikov/TcsStockScreener/blob/main/img/screen.png" width="50%" height="50%">
 # How to build
 - Run `Scripts/publish.bat` or `Scripts/publish.sh` depending on your operating system - Windows or Linux.
 - Copy `settings.json` to `publish` folder. 
