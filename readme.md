@@ -9,7 +9,7 @@ The application uses [Tinkoff API](https://tinkoffcreditsystems.github.io/invest
 
 # How to use
 Edit `settings.json` and run the app:
-- Specify `TcsToken`. You can generate a token at the settings page of your [account](www.tinkoff.ru/invest/settings). Sandbox token is required.
+- Specify `TcsToken`. You can generate a token at the settings page of your [account](https://www.tinkoff.ru/invest/settings). Sandbox token is required.
 - Specify `TelegramBotToken`. Start dialog with [@botfather](https://t.me/botfather) to create the bot.
 - Specify `TelegramChatId` - the id of chat or group where Telegram bot will send notifications.
 - Specify `NotificationRules`. See examples below.
