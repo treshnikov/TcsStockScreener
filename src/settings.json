@@ -14,13 +14,13 @@
       "PriceDirection": 1
     },
     {
-      "PriceChangeInPercent": 5.0,
+      "PriceChangeInPercent": 6.0,
       "TimePeriodInHours": 6.0,
       "PriceDirection": 1
     },
     {
-      "PriceChangeInPercent": 3.5,
-      "TimePeriodInHours": 2.0,
+      "PriceChangeInPercent": 5,
+      "TimePeriodInHours": 3.0,
       "PriceDirection": 1
     }
   ],

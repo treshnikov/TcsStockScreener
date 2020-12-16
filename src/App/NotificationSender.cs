@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Tinkoff.Trading.OpenApi.Models;
 
 namespace BotScreener.App
 {
@@ -24,7 +25,7 @@ namespace BotScreener.App
             _telegramBot = telegramBot;
         }
 
-        public async Task SendNotification(NotificationRule notificationRule, string ticker, string text)
+        public async Task SendNotification(NotificationRule notificationRule, MarketInstrument instrument, CandlePayload firstCandle, CandlePayload lastCandle)
         {
             if (_notificationTimestampToTicker == null)
             {
@@ -33,11 +34,14 @@ namespace BotScreener.App
 
             try
             {
-                if (!_notificationTimestampToTicker.ContainsKey(ticker) ||
-                    (_notificationTimestampToTicker.ContainsKey(ticker) && DateTime.UtcNow - _notificationTimestampToTicker[ticker] >= TimeSpan.FromHours(notificationRule.TimePeriodInHours)))
+                if (!_notificationTimestampToTicker.ContainsKey(instrument.Ticker) ||
+                    (_notificationTimestampToTicker.ContainsKey(instrument.Ticker) &&
+                    DateTime.UtcNow - _notificationTimestampToTicker[instrument.Ticker] >= TimeSpan.FromHours(notificationRule.TimePeriodInHours)))
                 {
-                    await _telegramBot.SendNotification(text);
-                    _notificationTimestampToTicker[ticker] = DateTime.UtcNow;
+                    var msg = MakeNotificationMessage(notificationRule, instrument, firstCandle, lastCandle);
+
+                    await _telegramBot.SendNotification(msg);
+                    _notificationTimestampToTicker[instrument.Ticker] = DateTime.UtcNow;
                     await SaveLastSendTimes();
                 }
             }
@@ -48,6 +52,18 @@ namespace BotScreener.App
             }
         }
 
+        private static string MakeNotificationMessage(NotificationRule notificationRule, MarketInstrument instrument, CandlePayload firstCandle, CandlePayload lastCandle)
+        {
+            var priceChange = lastCandle.Close - firstCandle.Close;
+            var priceChangeInPercent = 100 * priceChange / firstCandle.Close;
+
+            var msg =
+                $"{(notificationRule.PriceDirection == PriceDirection.Decrased ? "📉" : "📈") } " +
+                $"${instrument.Ticker} {lastCandle.Close} {instrument.Currency}\r\n" +
+                $"{notificationRule.TimePeriodInHours}h / {priceChangeInPercent.ToString("F2")} % / {(priceChange >= 0 ? "+" : "")}{priceChange.ToString("F2")} {instrument.Currency}\r\n" +
+                $"{"https://www.tinkoff.ru/invest/stocks/"}{instrument.Ticker}";
+            return msg;
+        }
         private async Task LoadLastSendTimes()
         {
             _notificationTimestampToTicker = new Dictionary<string, DateTime>();

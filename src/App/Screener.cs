@@ -17,11 +17,11 @@ namespace BotScreener.App
         private readonly string _tcsToken;
         private readonly string[] _tickersToScan;
         private readonly NotificationRule[] _notificationRules;
-        private readonly Func<NotificationRule, string, string, Task> _sendNotification;
+        private readonly Func<NotificationRule, MarketInstrument, CandlePayload, CandlePayload, Task> _sendNotification;
         private static readonly TimeSpan _sleepTime = TimeSpan.FromMilliseconds(800);
 
         public Screener(string tcsToken, string[] tickersToScan, NotificationRule[] notificationRules,
-            Func<NotificationRule, string, string, Task> sendNotification)
+            Func<NotificationRule, MarketInstrument, CandlePayload, CandlePayload, Task> sendNotification)
         {
             _tcsToken = tcsToken;
             _tickersToScan = tickersToScan;
@@ -112,25 +112,29 @@ namespace BotScreener.App
             }
             var firstCandle = previousCandles.OrderByDescending(i => i.Time).First();
 
-            // log changes
-            var priceChange = lastCandle.Close - firstCandle.Close;
-            var priceChangeInPercent = 100 * priceChange / firstCandle.Close;
-            var msg =
-                $"{(notificationRule.PriceDirection == PriceDirection.Decrased ? "📉" : "📈") } " +
-                $"${instrument.Ticker} {lastCandle.Close} {instrument.Currency}\r\n" +
-                $"{notificationRule.TimePeriodInHours}h / {priceChangeInPercent.ToString("F2")} % / {(priceChange >= 0 ? "+" : "")}{priceChange.ToString("F2")} {instrument.Currency}\r\n" +
-                $"{"https://www.tinkoff.ru/invest/stocks/"}{instrument.Ticker}";
-            
             if (notificationRule.IsActual(firstCandle.Close, lastCandle.Close))
             {
-                Log.Warning(msg);
-                await _sendNotification(notificationRule, instrument.Ticker, msg);
-            }
-            else
-            {
-                Log.Information(msg);
+                await _sendNotification(notificationRule, instrument, firstCandle, lastCandle);
             }
 
+            LogTicker(instrument, notificationRule, lastCandle, firstCandle);
+        }
+
+        private static void LogTicker(MarketInstrument instrument, NotificationRule notificationRule, CandlePayload lastCandle, CandlePayload firstCandle)
+        {
+            var priceChange = lastCandle.Close - firstCandle.Close;
+            var priceChangeInPercent = 100 * priceChange / firstCandle.Close;
+
+            var msg =
+                $"${instrument.Ticker} " +
+                $"{notificationRule.TimePeriodInHours}h / {priceChangeInPercent.ToString("F2")} % / {(priceChange >= 0 ? "+" : "")}{priceChange.ToString("F2")} {instrument.Currency} / " +
+                $"{firstCandle.Close} {instrument.Currency} -> {lastCandle.Close} {instrument.Currency} / " +
+                $"{firstCandle.Time:dd.MM.yyyy HH:mm} -> {lastCandle.Time:dd.MM.yyyy HH:mm}";
+
+            Log.Write(notificationRule.IsActual(firstCandle.Close, lastCandle.Close)
+                ? Serilog.Events.LogEventLevel.Warning
+                : Serilog.Events.LogEventLevel.Information,
+                msg);
         }
     }
 }
