@@ -32,7 +32,7 @@ namespace BotScreener.App
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error(ex.ToString());
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
@@ -52,7 +52,7 @@ namespace BotScreener.App
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error(ex.ToString());
             }
         }
 
@@ -69,7 +69,7 @@ namespace BotScreener.App
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.Error(ex.ToString());
             }
         }
     }

@@ -7,6 +7,7 @@ using Serilog.Sinks.SystemConsole.Themes;
 using BotScreener.App;
 using BotScreener.Domain;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace BotScreener
 {
@@ -40,11 +41,20 @@ namespace BotScreener
             {
                 try
                 {
+                    //check working days and stock working hours
+                    var dt = DateTime.UtcNow;
+                    var day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(dt);
+                    if (day == DayOfWeek.Sunday || day == DayOfWeek.Saturday || dt.Hour < 7 || dt.Hour > 22)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(10));
+                        continue;
+                    }
+
                     await screener.Scan();
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error(ex.ToString());
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
@@ -61,7 +71,7 @@ namespace BotScreener
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error(ex.ToString());
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }

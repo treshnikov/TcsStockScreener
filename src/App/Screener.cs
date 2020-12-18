@@ -45,7 +45,6 @@ namespace BotScreener.App
             instruments = instruments.Where(i => tickersToScan.Contains(i.Ticker)).ToList();
 
             // calculate delta
-            var idx = 0;
             foreach (var instrument in instruments)
             {
                 try
@@ -58,12 +57,9 @@ namespace BotScreener.App
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.Message);
+                    Log.Error(ex.ToString());
                     await Task.Delay(_sleepTime);
                 }
-
-                idx++;
-                Console.Title = $"[{idx} / {instruments.Count}] {instrument.Ticker}";
             }
         }
 
