@@ -2,16 +2,11 @@
 
 namespace BotScreener.Domain
 {
-    public class Settings 
-    {
-        public string TcsToken { get; set; }
+    public record Settings(
+        string TcsToken, 
+        string TelegramBotToken,
+        string TelegramChatId,
+        string[] TickersToScan ,
+        NotificationRule[] NotificationRules);
 
-        public string TelegramBotToken { get; set; }
-
-        public string TelegramChatId { get; set; }
-
-        public string[] TickersToScan { get; set; }
-
-        public NotificationRule[] NotificationRules { get; set; }
-    }
 }

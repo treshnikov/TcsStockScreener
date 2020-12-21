@@ -4,9 +4,9 @@ namespace BotScreener.Domain
 {
     public class NotificationRule
     {
-        public decimal PriceChangeInPercent { get; set; }
-        public float TimePeriodInHours { get; set; }
-        public PriceDirection PriceDirection { get; set; }
+        public decimal PriceChangeInPercent { get; init; }
+        public float TimePeriodInHours { get; init; }
+        public PriceDirection PriceDirection { get; init; }
 
         public bool IsActual(decimal priceBefore, decimal priceNow)
         {
