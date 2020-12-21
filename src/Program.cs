@@ -23,6 +23,8 @@ namespace BotScreener
                .CreateLogger();
         }
 
+        volatile static bool stopCommand = false;
+
         static async Task Main(string[] args)
         {
             SetupStaticLogger();
@@ -32,19 +34,28 @@ namespace BotScreener
             await telegramBot.Start();
             var notificationSender = new NotificationSender(telegramBot);
 
-            var screener = new Screener(settings.TcsToken, 
-                                        settings.TickersToScan.Distinct().ToArray(), 
+            var screener = new Screener(settings.TcsToken,
+                                        settings.TickersToScan.Distinct().ToArray(),
                                         settings.NotificationRules,
                                         notificationSender.SendNotification);
+            AppDomain.CurrentDomain.ProcessExit += async (s, e) =>
+            {
+                await HandleStopCommand(telegramBot);
+            };
 
-            while (true)
+            Console.CancelKeyPress += async (s, e) =>
+            {
+                await HandleStopCommand(telegramBot);
+            };
+
+            while (!stopCommand)
             {
                 try
                 {
                     //check working days and stock working hours
                     var dt = DateTime.UtcNow;
                     var day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(dt);
-                    if (day == DayOfWeek.Sunday || day == DayOfWeek.Saturday || dt.Hour < 7 || dt.Hour > 22)
+                    if (day == DayOfWeek.Sunday || day == DayOfWeek.Saturday || dt.Hour < 6 || dt.Hour > 22)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(10));
                         continue;
@@ -58,7 +69,12 @@ namespace BotScreener
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
-            telegramBot.Stop();
+        }
+
+        private static async Task HandleStopCommand(TelegramBot telegramBot)
+        {
+            await telegramBot.Stop();
+            stopCommand = true;
         }
 
         private async static Task<Settings> GetSettings()

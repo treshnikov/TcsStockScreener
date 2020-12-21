@@ -10,6 +10,7 @@ namespace BotScreener.App
         private TelegramBotClient _botClient;
         private readonly string _telegramBotToken;
         private readonly string _telegramChatId;
+        private volatile bool stopCommand = false;
 
         public TelegramBot(string telegramBotToken, string telegramChatId)
         {
@@ -19,7 +20,7 @@ namespace BotScreener.App
 
         public async Task Start()
         {
-            while (true)
+            while (!stopCommand)
             {
                 try
                 {
@@ -27,7 +28,10 @@ namespace BotScreener.App
                     var botInfo = await _botClient.GetMeAsync();
                     _botClient.OnMessage += async (s, e) => { await OnMessageReceived(s, e); };
                    _botClient.StartReceiving();
-                    Log.Information($"Telegram bot has started. Id: {botInfo.Id}, Name: {botInfo.FirstName}.");
+
+                    var msg = $"Telegram bot has started. Id: {botInfo.Id}, Name: {botInfo.FirstName}.";
+                    Log.Information(msg);
+                    await _botClient.SendTextMessageAsync(_telegramChatId, msg);
                     return;
                 }
                 catch (Exception ex)
@@ -36,6 +40,16 @@ namespace BotScreener.App
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
+        }
+
+        public async Task Stop()
+        {
+            stopCommand = true;
+            _botClient.StopReceiving();
+
+            var msg = $"Telegram bot has stopped.";
+            Log.Information(msg);
+            await _botClient.SendTextMessageAsync(_telegramChatId, msg);
         }
 
         private async Task OnMessageReceived(object sender, Telegram.Bot.Args.MessageEventArgs e)
@@ -54,11 +68,6 @@ namespace BotScreener.App
             {
                 Log.Error(ex.ToString());
             }
-        }
-
-        public void Stop()
-        {
-            _botClient.StopReceiving();
         }
 
         public async Task SendNotification(string text)
