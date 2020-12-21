@@ -29,7 +29,7 @@ namespace BotScreener.App
                     _botClient.OnMessage += async (s, e) => { await OnMessageReceived(s, e); };
                    _botClient.StartReceiving();
 
-                    var msg = $"Telegram bot has started. Id: {botInfo.Id}, Name: {botInfo.FirstName}.";
+                    var msg = $"▶ Telegram bot has started. Id: {botInfo.Id}, Name: {botInfo.FirstName}.";
                     Log.Information(msg);
                     await _botClient.SendTextMessageAsync(_telegramChatId, msg);
                     return;
@@ -47,7 +47,7 @@ namespace BotScreener.App
             stopCommand = true;
             _botClient.StopReceiving();
 
-            var msg = $"Telegram bot has stopped.";
+            var msg = $"⏹ Telegram bot has stopped.";
             Log.Information(msg);
             await _botClient.SendTextMessageAsync(_telegramChatId, msg);
         }
